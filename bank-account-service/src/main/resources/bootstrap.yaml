@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: bank-account-service
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8081
+  data:
+    mongodb:
+      database: bank_account
+      host: localhost
+      port: 27017
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+openapi:
+  bankAccountService:
+    base-path: /api

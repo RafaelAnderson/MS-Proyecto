@@ -1,0 +1,142 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Client Service
+servers:
+  - url: http://localhost:8081
+paths:
+  /clients:
+    post:
+      tags:
+        - client
+      summary: Create a new client
+      operationId: createClient
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+      responses:
+        '201':
+          description: Client created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+    get:
+      tags:
+        - client
+      summary: Get all clients
+      operationId: getAllClients
+      responses:
+        '200':
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+  /clients/{clientId}:
+    get:
+      tags:
+        - client
+      summary: Get a client by ID
+      operationId: getClientById
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+    put:
+      tags:
+        - client
+      summary: Update a client
+      operationId: updateClient
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Client"
+      responses:
+        '200':
+          description: Client updated
+    delete:
+      tags:
+        - client
+      summary: Delete client
+      description: Delete client
+      operationId: deleteClient
+      parameters:
+        - name: clientId
+          in: path
+          description: The id that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client deleted
+        '400':
+          description: Invalid client id
+        '404':
+          description: Client not found
+components:
+  schemas:
+    Client:
+      required:
+        - name
+        - lastName
+        - type
+        - birthdate
+      type: object
+      properties:
+        id:
+          type: string
+          example: "843un884931019rj10932"
+        name:
+          type: string
+          example: Rafael
+        lastname:
+          type: string
+          example: Ponte
+        address:
+          type: string
+          example: Lima - Perú
+        phone:
+          type: string
+          example: '987654321'
+        birthDate:
+          type: string
+          format: date
+        type:
+          type: string
+          enum:
+            - personal
+            - business
+    ModelApiResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code of the response
+        message:
+          type: string
+          description: Message for the response
+        data:
+          type: object
+          description: Data for the response

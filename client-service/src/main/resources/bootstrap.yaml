@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: client-service
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8081
+  data:
+    mongodb:
+      database: client
+      host: localhost
+      port: 27017
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+openapi:
+  clientService:
+    base-path: /api

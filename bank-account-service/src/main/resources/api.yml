@@ -1,0 +1,167 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Bank Account Service
+servers:
+  - url: http://localhost:8081
+paths:
+  /accounts:
+    post:
+      tags:
+        - account
+      summary: Create a new bank account
+      operationId: createAccount
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BankAccount"
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+    get:
+      tags:
+        - account
+      summary: Get all account
+      operationId: getAllAccounts
+      responses:
+        '200':
+          description: List of accounts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+  /accounts/{accountId}:
+    get:
+      tags:
+        - account
+      summary: Get account details
+      operationId: getAccountById
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+    delete:
+      tags:
+        - account
+      summary: Delete account
+      description: Delete account
+      operationId: deleteAccount
+      parameters:
+        - name: accountId
+          in: path
+          description: Bank account id to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account deleted
+        '400':
+          description: Invalid account id
+        '404':
+          description: Account not found
+  /transactions:
+    post:
+      tags:
+        - transaction
+      summary: Create a new transaction
+      operationId: createTransaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transaction"
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+  /transactions/findAll/{accountId}:
+    get:
+      tags:
+        - account
+      summary: Get transactions for a bank account
+      operationId: getAccountTransactions
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+components:
+  schemas:
+    BankAccount:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - savings
+            - current
+            - fixed_term
+        balance:
+          type: number
+          format: double
+          default: 0.00
+          minimum: 0.00
+        clientId:
+          type: string
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+        accountId:
+          type: string
+        type:
+          type: string
+          enum:
+            - deposit
+            - withdrawal
+        amount:
+          type: number
+          format: double
+          minimum: 0
+          example: 200.00
+        date:
+          type: string
+          format: date
+    ModelApiResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: HTTP status code of the response
+        message:
+          type: string
+          description: Message for the response
+        data:
+          type: object
+          description: Data for the response
