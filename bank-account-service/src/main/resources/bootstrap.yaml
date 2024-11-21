@@ -15,3 +15,8 @@ spring:
 openapi:
   bankAccountService:
     base-path: /api
+logging:
+  level:
+    com:
+      ms:
+        client: DEBUG

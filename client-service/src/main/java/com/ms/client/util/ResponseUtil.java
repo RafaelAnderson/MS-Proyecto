@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 
 public class ResponseUtil {
 
-    public static ResponseEntity<ModelApiResponse> getResponse(Integer status, String message, Object data) {
+    public static ResponseEntity<ModelApiResponse> getResponse(Integer status, String message,
+                                                               Object data) {
         ModelApiResponse response = ModelApiResponse.builder()
                 .status(status)
                 .message(message)

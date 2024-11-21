@@ -128,6 +128,15 @@ components:
           enum:
             - personal
             - business
+        profile:
+          type: string
+          enum:
+            - vip
+            - pyme
+        hasCreditCard:
+          type: boolean
+          default: false
+          example: true
     ModelApiResponse:
       type: object
       properties:
