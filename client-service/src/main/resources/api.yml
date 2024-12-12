@@ -122,7 +122,6 @@ components:
           example: '987654321'
         birthDate:
           type: string
-          format: date
         type:
           type: string
           enum:

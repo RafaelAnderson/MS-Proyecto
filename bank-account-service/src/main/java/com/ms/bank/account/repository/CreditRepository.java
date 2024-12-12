@@ -9,5 +9,6 @@ import java.util.List;
 @Repository
 public interface CreditRepository extends MongoRepository<Credit, String> {
     boolean existsByClientIdAndType(String clientId, Credit.TypeEnum type);
+
     List<Credit> findByClientId(String clientId);
 }

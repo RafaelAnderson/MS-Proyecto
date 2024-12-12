@@ -1,9 +1,14 @@
 package com.ms.bank.account.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ms.bank.account.api.AccountsApiDelegate;
+import com.ms.bank.account.client.ClientServiceFeignClient;
 import com.ms.bank.account.model.BankAccount;
+import com.ms.bank.account.model.Client;
+import com.ms.bank.account.model.Credit;
 import com.ms.bank.account.model.ModelApiResponse;
 import com.ms.bank.account.repository.BankAccountRepository;
+import com.ms.bank.account.repository.CreditRepository;
 import com.ms.bank.account.repository.TransactionRepository;
 import com.ms.bank.account.util.ResponseUtil;
 import org.slf4j.Logger;
@@ -13,10 +18,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
+import static com.ms.bank.account.util.ResponseUtil.buildConflictResponse;
+import static com.ms.bank.account.util.ResponseUtil.buildBadRequestResponse;
+import static com.ms.bank.account.util.ResponseUtil.buildCreatedResponse;
+
 
 @Service
 @Transactional
@@ -25,30 +36,92 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
     private static final Logger logger = LoggerFactory.getLogger(BankAccountApiDelegateImpl.class);
 
     @Autowired
+    private ClientServiceFeignClient clientServiceFeignClient;
+
+    @Autowired
     private BankAccountRepository bankAccountRepository;
 
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private CreditRepository creditRepository;
+
     @Override
     public ResponseEntity<ModelApiResponse> createAccount(BankAccount bankAccount) {
-        logger.info("Request received to create a new bank account for client ID: {}", bankAccount.getClientId());
-
-        List<BankAccount> existingAccount = bankAccountRepository.findByClientId(bankAccount.getClientId()).stream()
-                .filter(bk -> bk.getType().getValue().equals(bankAccount.getType().getValue()))
-                .collect(Collectors.toList());
-
-        if (!existingAccount.isEmpty()) {
-            logger.warn("Client ID: {} already has an account of type {}", bankAccount.getClientId(), bankAccount.getType());
-            return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),
-                    "The customer already has an account of type " + bankAccount.getType(), null);
+        if (hasExistingAccount(bankAccount)) {
+            return buildConflictResponse("The client already has an account of type " + bankAccount.getType());
         }
 
-        bankAccount.setBalance(0d);
+        Client client = getClientById(bankAccount.getClientId());
+        if (!isValidAccountForClient(client, bankAccount)) {
+            return buildConflictResponse("Business client can't have this type of account, just current account");
+        }
+
+        if (requiresCreditCard(client) && !hasCreditCard(bankAccount.getClientId())) {
+            return buildBadRequestResponse("Client must have a credit card to open this type of account");
+        }
+
+        configureAccountByType(bankAccount);
+
+        bankAccount.setBalance(Objects.isNull(bankAccount.getBalance()) ? 0d : bankAccount.getBalance());
         BankAccount createdAccount = bankAccountRepository.save(bankAccount);
         logger.info("Bank account created successfully with ID: {}", createdAccount.getId());
 
-        return ResponseUtil.getResponse(HttpStatus.CREATED.value(), "Account created successfully", createdAccount);
+        return buildCreatedResponse("Account created successfully", createdAccount);
+    }
+
+    private boolean hasExistingAccount(BankAccount bankAccount) {
+        return bankAccountRepository.findByClientId(bankAccount.getClientId()).stream()
+                .anyMatch(bk -> bk.getType().getValue().equals(bankAccount.getType().getValue()));
+    }
+
+    private Client getClientById(String clientId) {
+        Object clientObj = clientServiceFeignClient.getClientById(clientId).getData();
+        return new ObjectMapper().convertValue(clientObj, Client.class);
+    }
+
+    private boolean isValidAccountForClient(Client client, BankAccount bankAccount) {
+        return !client.getType().equals(Client.TypeEnum.BUSINESS) || isCurrentAccount(bankAccount);
+    }
+
+    private boolean hasCreditCard(String clientId) {
+        return Boolean.TRUE.equals(Mono.zip(
+                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.CREDITCARDPERSONAL)),
+                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.CREDITCARDBUSINESS)))
+                .map(t -> t.getT1() || t.getT2())
+                .block());
+    }
+
+    private boolean requiresCreditCard(Client client) {
+        return client.getProfile().equals(Client.ProfileEnum.VIP) || client.getProfile().equals(Client.ProfileEnum.PYME);
+    }
+
+    private boolean isCurrentAccount(BankAccount bankAccount) {
+        return bankAccount.getType().getValue().equals(BankAccount.TypeEnum.CURRENT.getValue());
+    }
+
+    private void configureAccountByType(BankAccount bankAccount) {
+        switch (bankAccount.getType()) {
+            case SAVINGS:
+                bankAccount.setCommissionFree(true);
+                bankAccount.setMovementsFree(false);
+                bankAccount.setMovementsLimit(10);
+                break;
+            case CURRENT:
+                bankAccount.setCommissionFree(false);
+                bankAccount.setCommissionAmount(20.0);
+                bankAccount.setMovementsFree(true);
+                break;
+            case FIXED_TERM:
+                bankAccount.setCommissionFree(true);
+                bankAccount.setMovementsFree(false);
+                bankAccount.setMovementsLimit(1);
+                break;
+            default:
+                logger.warn("Unknown account type: {}", bankAccount.getType());
+                break;
+        }
     }
 
     @Override
@@ -67,7 +140,6 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Override
     public ResponseEntity<ModelApiResponse> getAccountById(String accountId) {
-        logger.info("Fetching bank account with ID: {}", accountId);
 
         Optional<BankAccount> account = bankAccountRepository.findById(accountId);
 
@@ -84,7 +156,6 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Override
     public ResponseEntity<ModelApiResponse> getAllAccounts() {
-        logger.info("Request received to fetch all bank accounts");
         List<BankAccount> bankAccounts = bankAccountRepository.findAll();
 
         logger.info("Total bank accounts found: {}", bankAccounts.size());

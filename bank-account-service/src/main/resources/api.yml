@@ -200,6 +200,40 @@ paths:
                 $ref: "#/components/schemas/ModelApiResponse"
         '404':
           description: No credits found for the client
+
+  /reports/products:
+    get:
+      tags:
+        - reports
+      summary: Generate a general report of bank products
+      operationId: generateProductReport
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date of the report (YYYY-MM-DD)
+        - name: endDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date of the report (YYYY-MM-DD)
+      responses:
+        '200':
+          description: General product report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelApiResponse"
+        '400':
+          description: Invalid date range or missing parameters
+        '404':
+          description: No data found for the specified date range
+
 components:
   schemas:
     BankAccount:
@@ -220,6 +254,21 @@ components:
           minimum: 0.00
         clientId:
           type: string
+        commissionFree:
+          type: boolean
+          default: false
+        commissionAmount:
+          type: number
+          format: double
+          default: 0.00
+          minimum: 0.00
+        movementsFree:
+          type: boolean
+          default: false
+        movementsLimit:
+          type: integer
+          default: 0
+
     Transaction:
       type: object
       properties:
@@ -279,6 +328,73 @@ components:
           type: number
           format: double
         guarantor:
+          type: string
+    Client:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "843un884931019rj10932"
+        name:
+          type: string
+          example: Rafael
+        lastname:
+          type: string
+          example: Ponte
+        address:
+          type: string
+          example: Lima - Perú
+        phone:
+          type: string
+          example: '987654321'
+        birthDate:
+          type: string
+        type:
+          type: string
+          enum:
+            - personal
+            - business
+        profile:
+          type: string
+          enum:
+            - vip
+            - pyme
+        hasCreditCard:
+          type: boolean
+          default: false
+          example: true
+
+    ProductReport:
+      type: object
+      properties:
+        productType:
+          type: string
+          description: Type of the product
+        totalBalance:
+          type: number
+          format: double
+          description: Total balance for the product type
+        totalAccounts:
+          type: integer
+          description: Total number of accounts or credits for the product type
+        averageBalance:
+          type: number
+          format: double
+          description: Average balance across accounts for the product type
+        totalTransactions:
+          type: integer
+          description: Total number of transactions for the product type
+        transactionsSummary:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionType:
+                type: string
+              totalAmount:
+                type: number
+                format: double
+        reportDate:
           type: string
 
     ModelApiResponse:

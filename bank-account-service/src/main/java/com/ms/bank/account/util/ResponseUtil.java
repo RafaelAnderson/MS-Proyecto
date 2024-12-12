@@ -15,4 +15,16 @@ public class ResponseUtil {
 
         return new ResponseEntity<>(response, HttpStatus.valueOf(status));
     }
+
+    public static ResponseEntity<ModelApiResponse> buildConflictResponse(String message) {
+        return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(), message, null);
+    }
+
+    public static ResponseEntity<ModelApiResponse> buildBadRequestResponse(String message) {
+        return ResponseUtil.getResponse(HttpStatus.BAD_REQUEST.value(), message, null);
+    }
+
+    public static ResponseEntity<ModelApiResponse> buildCreatedResponse(String message, Object object) {
+        return ResponseUtil.getResponse(HttpStatus.CREATED.value(), message, object);
+    }
 }

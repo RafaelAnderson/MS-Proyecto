@@ -35,7 +35,6 @@ public class TransactionsApiDelegateImpl implements TransactionsApiDelegate {
     @Override
     @Transactional
     public ResponseEntity<ModelApiResponse> createTransaction(Transaction transaction) {
-        logger.info("Request received to create a transaction for account ID: {}", transaction.getAccountId());
 
         if (!bankAccountRepository.existsById(transaction.getAccountId())) {
             logger.warn("Bank account with ID: {} not found", transaction.getAccountId());
@@ -44,8 +43,6 @@ public class TransactionsApiDelegateImpl implements TransactionsApiDelegate {
 
         BankAccount bankAccount = bankAccountRepository.findById(transaction.getAccountId())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-
-        logger.debug("Bank account found with ID: {}. Current balance: {}", bankAccount.getId(), bankAccount.getBalance());
 
         if (transaction.getAmount() <= 0) {
             logger.error("Invalid transaction amount: {}", transaction.getAmount());

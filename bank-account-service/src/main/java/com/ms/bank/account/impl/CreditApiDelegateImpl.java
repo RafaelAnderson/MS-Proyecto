@@ -28,7 +28,6 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
 
     @Override
     public ResponseEntity<ModelApiResponse> createCredit(Credit credit) {
-        logger.info("Request received to create a new credit product for client ID: {}", credit.getClientId());
 
         // Check if the client already has a credit of the same type (e.g., one personal credit per client)
         if (creditRepository.existsByClientIdAndType(credit.getClientId(), credit.getType())) {
@@ -37,7 +36,7 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
                     "The customer already has a credit of type " + credit.getType(), null);
         }
 
-        credit.setBalance(0d);  // Initially set the balance to 0
+        credit.setBalance(credit.getBalance());
         Credit createdCredit = creditRepository.save(credit);
         logger.info("Credit product created successfully with ID: {}", createdCredit.getId());
 

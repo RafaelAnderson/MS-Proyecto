@@ -27,10 +27,20 @@ public class ClientApiDelegateImpl implements ClientsApiDelegate {
 
     @Override
     public ResponseEntity<ModelApiResponse> createClient(Client client) {
-        logger.info("Creating new client: {}", client.getName());
+        logger.info(client.toString());
+        if (!validClientProfile(client)) {
+            return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),
+                    "The client doesn't have the correct profile " + client.getProfile(), null);
+        }
+
         Client savedClient = clientRepository.save(client);
         logger.debug("Client created with ID: {}", savedClient.getId());
         return ResponseUtil.getResponse(HttpStatus.CREATED.value(), "Account created successfully", savedClient);
+    }
+
+    private boolean validClientProfile(Client client) {
+        return client.getType().equals(Client.TypeEnum.PERSONAL) && client.getProfile().equals(Client.ProfileEnum.VIP) ||
+                client.getType().equals(Client.TypeEnum.BUSINESS) && client.getProfile().equals(Client.ProfileEnum.PYME);
     }
 
     @Override
