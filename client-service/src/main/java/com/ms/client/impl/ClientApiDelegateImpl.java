@@ -28,6 +28,12 @@ public class ClientApiDelegateImpl implements ClientsApiDelegate {
     @Override
     public ResponseEntity<ModelApiResponse> createClient(Client client) {
         logger.info(client.toString());
+
+        if(existClient(client)) {
+            return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),
+                    "The client is already registered", null);
+        }
+
         if (!validClientProfile(client)) {
             return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),
                     "The client doesn't have the correct profile " + client.getProfile(), null);
@@ -36,6 +42,10 @@ public class ClientApiDelegateImpl implements ClientsApiDelegate {
         Client savedClient = clientRepository.save(client);
         logger.debug("Client created with ID: {}", savedClient.getId());
         return ResponseUtil.getResponse(HttpStatus.CREATED.value(), "Account created successfully", savedClient);
+    }
+
+    private boolean existClient(Client client) {
+        return clientRepository.existsByDocument(client.getDocument());
     }
 
     private boolean validClientProfile(Client client) {

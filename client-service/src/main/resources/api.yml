@@ -108,6 +108,9 @@ components:
         id:
           type: string
           example: "843un884931019rj10932"
+        document:
+          type: string
+          example: "12345678"
         name:
           type: string
           example: Rafael
