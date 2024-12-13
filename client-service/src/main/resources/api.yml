@@ -75,6 +75,7 @@ paths:
       responses:
         '200':
           description: Client updated
+
     delete:
       tags:
         - client
@@ -135,10 +136,7 @@ components:
           enum:
             - vip
             - pyme
-        hasCreditCard:
-          type: boolean
-          default: false
-          example: true
+
     ModelApiResponse:
       type: object
       properties:

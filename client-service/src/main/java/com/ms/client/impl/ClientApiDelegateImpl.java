@@ -5,15 +5,15 @@ import com.ms.client.model.Client;
 import com.ms.client.model.ModelApiResponse;
 import com.ms.client.repository.ClientRepository;
 import com.ms.client.util.ResponseUtil;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,14 +22,16 @@ public class ClientApiDelegateImpl implements ClientsApiDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientApiDelegateImpl.class);
 
-    @Autowired
-    private ClientRepository clientRepository;
+    private final ClientRepository clientRepository;
+
+    public ClientApiDelegateImpl(ClientRepository clientRepository) {
+        this.clientRepository = clientRepository;
+    }
 
     @Override
     public ResponseEntity<ModelApiResponse> createClient(Client client) {
-        logger.info(client.toString());
 
-        if(existClient(client)) {
+        if (existClient(client)) {
             return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),
                     "The client is already registered", null);
         }
@@ -71,35 +73,34 @@ public class ClientApiDelegateImpl implements ClientsApiDelegate {
     @Override
     public ResponseEntity<ModelApiResponse> getClientById(String clientId) {
         logger.info("Fetching client with ID: {}", clientId);
-        Optional<Client> clientOptional = clientRepository.findById(clientId);
 
-        return clientOptional
+        return Mono.justOrEmpty(clientRepository.findById(clientId))
                 .map(client -> {
                     logger.debug("Client found: {}", client.getName());
                     return ResponseUtil.getResponse(HttpStatus.OK.value(), "Client", client);
                 })
-                .orElseGet(() -> {
-                    logger.warn("Client with ID: {} not found", clientId);
-                    return ResponseUtil.getResponse(HttpStatus.NOT_FOUND.value(), "Client", null);
-                });
+                .defaultIfEmpty(ResponseUtil.getResponse(HttpStatus.NOT_FOUND.value(), "Client", null))
+                .block();
     }
 
     @Override
     public ResponseEntity<ModelApiResponse> getAllClients() {
-        logger.info("Fetching all clients");
-        List<Client> clients = clientRepository.findAll();
-        logger.debug("Total clients found: {}", clients.size());
-        return ResponseUtil.getResponse(HttpStatus.OK.value(), "List of clients", clients);
+
+        return Flux.fromIterable(clientRepository.findAll())
+                .collectList()
+                .map(clients -> {
+                    logger.debug("Total clients: {}", clients.size());
+                    return ResponseUtil.getResponse(HttpStatus.OK.value(), "List of clients", clients);
+                })
+                .block();
     }
 
     @Override
     public ResponseEntity<Void> updateClient(String clientId, Client client) {
-        logger.info("Updating client with ID: {}", clientId);
         Optional<Client> clientOptional = clientRepository.findById(clientId);
 
         if (clientOptional.isPresent()) {
             Client existingClient = clientOptional.get();
-            logger.debug("Client found: {}. Updating data.", existingClient.getName());
 
             existingClient.setPhone(client.getPhone());
             existingClient.setAddress(client.getAddress());

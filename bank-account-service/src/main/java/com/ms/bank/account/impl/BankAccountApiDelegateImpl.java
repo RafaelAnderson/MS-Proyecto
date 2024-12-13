@@ -9,11 +9,9 @@ import com.ms.bank.account.model.Credit;
 import com.ms.bank.account.model.ModelApiResponse;
 import com.ms.bank.account.repository.BankAccountRepository;
 import com.ms.bank.account.repository.CreditRepository;
-import com.ms.bank.account.repository.TransactionRepository;
 import com.ms.bank.account.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -35,17 +33,17 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
 
     private static final Logger logger = LoggerFactory.getLogger(BankAccountApiDelegateImpl.class);
 
-    @Autowired
-    private ClientServiceFeignClient clientServiceFeignClient;
+    private final ClientServiceFeignClient clientServiceFeignClient;
+    private final BankAccountRepository bankAccountRepository;
+    private final CreditRepository creditRepository;
 
-    @Autowired
-    private BankAccountRepository bankAccountRepository;
-
-    @Autowired
-    private TransactionRepository transactionRepository;
-
-    @Autowired
-    private CreditRepository creditRepository;
+    public BankAccountApiDelegateImpl(ClientServiceFeignClient clientServiceFeignClient,
+                                      BankAccountRepository bankAccountRepository,
+                                      CreditRepository creditRepository) {
+        this.clientServiceFeignClient = clientServiceFeignClient;
+        this.bankAccountRepository = bankAccountRepository;
+        this.creditRepository = creditRepository;
+    }
 
     @Override
     public ResponseEntity<ModelApiResponse> createAccount(BankAccount bankAccount) {
@@ -85,20 +83,20 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
         return !client.getType().equals(Client.TypeEnum.BUSINESS) || isCurrentAccount(bankAccount);
     }
 
+    private boolean isCurrentAccount(BankAccount bankAccount) {
+        return bankAccount.getType().getValue().equals(BankAccount.TypeEnum.CURRENT.getValue());
+    }
+
     private boolean hasCreditCard(String clientId) {
         return Boolean.TRUE.equals(Mono.zip(
-                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.CREDITCARDPERSONAL)),
-                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.CREDITCARDBUSINESS)))
+                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.PERSONAL)),
+                        Mono.just(creditRepository.existsByClientIdAndType(clientId, Credit.TypeEnum.BUSINESS)))
                 .map(t -> t.getT1() || t.getT2())
                 .block());
     }
 
     private boolean requiresCreditCard(Client client) {
         return client.getProfile().equals(Client.ProfileEnum.VIP) || client.getProfile().equals(Client.ProfileEnum.PYME);
-    }
-
-    private boolean isCurrentAccount(BankAccount bankAccount) {
-        return bankAccount.getType().getValue().equals(BankAccount.TypeEnum.CURRENT.getValue());
     }
 
     private void configureAccountByType(BankAccount bankAccount) {

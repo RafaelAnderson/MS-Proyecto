@@ -201,27 +201,18 @@ paths:
         '404':
           description: No credits found for the client
 
-  /reports/products:
+  /reports/products/{clientId}:
     get:
       tags:
         - reports
       summary: Generate a general report of bank products
       operationId: generateProductReport
       parameters:
-        - name: startDate
-          in: query
+        - name: clientId
+          in: path
           required: true
           schema:
             type: string
-            format: date
-          description: Start date of the report (YYYY-MM-DD)
-        - name: endDate
-          in: query
-          required: true
-          schema:
-            type: string
-            format: date
-          description: End date of the report (YYYY-MM-DD)
       responses:
         '200':
           description: General product report generated successfully
@@ -281,6 +272,7 @@ components:
           enum:
             - deposit
             - withdrawal
+            - purchase
         amount:
           type: number
           format: double
@@ -289,6 +281,10 @@ components:
         date:
           type: string
           format: date
+        description:
+          type: string
+          example: "Bicycle"
+
     Credit:
       type: object
       properties:
@@ -299,10 +295,11 @@ components:
           enum:
             - personal
             - business
-            - creditcardpersonal
-            - creditcardbusiness
         clientId:
           type: string
+        line:
+          type: number
+          format: double
         balance:
           type: number
           format: double
@@ -313,11 +310,9 @@ components:
           type: number
           format: double
         startDate:
-          type: string
-          format: date
+          type: integer
         endDate:
-          type: string
-          format: date
+          type: integer
         status:
           type: string
           enum:
@@ -366,39 +361,6 @@ components:
           type: boolean
           default: false
           example: true
-
-    ProductReport:
-      type: object
-      properties:
-        productType:
-          type: string
-          description: Type of the product
-        totalBalance:
-          type: number
-          format: double
-          description: Total balance for the product type
-        totalAccounts:
-          type: integer
-          description: Total number of accounts or credits for the product type
-        averageBalance:
-          type: number
-          format: double
-          description: Average balance across accounts for the product type
-        totalTransactions:
-          type: integer
-          description: Total number of transactions for the product type
-        transactionsSummary:
-          type: array
-          items:
-            type: object
-            properties:
-              transactionType:
-                type: string
-              totalAmount:
-                type: number
-                format: double
-        reportDate:
-          type: string
 
     ModelApiResponse:
       type: object

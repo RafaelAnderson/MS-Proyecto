@@ -7,7 +7,6 @@ import com.ms.bank.account.repository.CreditRepository;
 import com.ms.bank.account.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,11 +19,13 @@ import java.util.Optional;
 @Transactional
 public class CreditApiDelegateImpl implements CreditsApiDelegate {
 
-
     private static final Logger logger = LoggerFactory.getLogger(CreditApiDelegateImpl.class);
 
-    @Autowired
-    private CreditRepository creditRepository;
+    private final CreditRepository creditRepository;
+
+    public CreditApiDelegateImpl(CreditRepository creditRepository) {
+        this.creditRepository = creditRepository;
+    }
 
     @Override
     public ResponseEntity<ModelApiResponse> createCredit(Credit credit) {
@@ -36,7 +37,6 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
                     "The customer already has a credit of type " + credit.getType(), null);
         }
 
-        credit.setBalance(credit.getBalance());
         Credit createdCredit = creditRepository.save(credit);
         logger.info("Credit product created successfully with ID: {}", createdCredit.getId());
 
