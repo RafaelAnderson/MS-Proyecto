@@ -30,7 +30,6 @@ public class CreditApiDelegateImpl implements CreditsApiDelegate {
     @Override
     public ResponseEntity<ModelApiResponse> createCredit(Credit credit) {
 
-        // Check if the client already has a credit of the same type (e.g., one personal credit per client)
         if (creditRepository.existsByClientIdAndType(credit.getClientId(), credit.getType())) {
             logger.warn("Client ID: {} already has a credit of type {}", credit.getClientId(), credit.getType());
             return ResponseUtil.getResponse(HttpStatus.CONFLICT.value(),

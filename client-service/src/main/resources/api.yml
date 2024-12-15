@@ -5,97 +5,13 @@ info:
 servers:
   - url: http://localhost:8081
 paths:
-  /clients:
-    post:
-      tags:
-        - client
-      summary: Create a new client
-      operationId: createClient
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Client"
-      responses:
-        '201':
-          description: Client created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
+  /default:
     get:
-      tags:
-        - client
-      summary: Get all clients
-      operationId: getAllClients
+      summary: Default message
       responses:
         '200':
-          description: List of clients
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-  /clients/{clientId}:
-    get:
-      tags:
-        - client
-      summary: Get a client by ID
-      operationId: getClientById
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Client details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-    put:
-      tags:
-        - client
-      summary: Update a client
-      operationId: updateClient
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Client"
-      responses:
-        '200':
-          description: Client updated
+          description: Default message
 
-    delete:
-      tags:
-        - client
-      summary: Delete client
-      description: Delete client
-      operationId: deleteClient
-      parameters:
-        - name: clientId
-          in: path
-          description: The id that needs to be deleted
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Client deleted
-        '400':
-          description: Invalid client id
-        '404':
-          description: Client not found
 components:
   schemas:
     Client:
@@ -115,7 +31,7 @@ components:
         name:
           type: string
           example: Rafael
-        lastname:
+        lastName:
           type: string
           example: Ponte
         address:
