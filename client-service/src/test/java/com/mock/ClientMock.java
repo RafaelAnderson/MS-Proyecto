@@ -1,4 +1,4 @@
-package mock;
+package com.mock;
 
 import com.ms.client.model.Client;
 
@@ -19,7 +19,7 @@ public class ClientMock {
                 .document("12345678")
                 .name("Rafael")
                 .lastName("Ponte")
-                .type(Client.TypeEnum.PERSONAL)
+                .type(Client.TypeEnum.BUSINESS)
                 .profile(Client.ProfileEnum.PYME)
                 .build();
     }
@@ -46,6 +46,26 @@ public class ClientMock {
                 .address("Lima - Perú")
                 .phone("4756787")
                 .type(Client.TypeEnum.PERSONAL)
+                .profile(Client.ProfileEnum.VIP)
+                .build();
+    }
+
+    public static Client invalid_profile_personal_pyme() {
+        return Client.builder()
+                .document("12345678")
+                .name("Rafael")
+                .lastName("Ponte")
+                .type(Client.TypeEnum.PERSONAL)
+                .profile(Client.ProfileEnum.PYME)
+                .build();
+    }
+
+    public static Client invalid_profile_business_vip() {
+        return Client.builder()
+                .document("12345678")
+                .name("Rafael")
+                .lastName("Ponte")
+                .type(Client.TypeEnum.BUSINESS)
                 .profile(Client.ProfileEnum.VIP)
                 .build();
     }

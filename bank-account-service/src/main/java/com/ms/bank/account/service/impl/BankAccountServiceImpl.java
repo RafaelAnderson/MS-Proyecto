@@ -1,4 +1,4 @@
-package com.ms.bank.account.impl;
+package com.ms.bank.account.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ms.bank.account.api.AccountsApiDelegate;
@@ -26,20 +26,19 @@ import static com.ms.bank.account.util.ResponseUtil.buildConflictResponse;
 import static com.ms.bank.account.util.ResponseUtil.buildBadRequestResponse;
 import static com.ms.bank.account.util.ResponseUtil.buildCreatedResponse;
 
-
 @Service
 @Transactional
-public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
+public class BankAccountServiceImpl implements AccountsApiDelegate {
 
-    private static final Logger logger = LoggerFactory.getLogger(BankAccountApiDelegateImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(BankAccountServiceImpl.class);
 
     private final ClientServiceFeignClient clientServiceFeignClient;
     private final BankAccountRepository bankAccountRepository;
     private final CreditRepository creditRepository;
 
-    public BankAccountApiDelegateImpl(ClientServiceFeignClient clientServiceFeignClient,
-                                      BankAccountRepository bankAccountRepository,
-                                      CreditRepository creditRepository) {
+    public BankAccountServiceImpl(ClientServiceFeignClient clientServiceFeignClient,
+                                  BankAccountRepository bankAccountRepository,
+                                  CreditRepository creditRepository) {
         this.clientServiceFeignClient = clientServiceFeignClient;
         this.bankAccountRepository = bankAccountRepository;
         this.creditRepository = creditRepository;
@@ -70,7 +69,8 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
     }
 
     private boolean hasExistingAccount(BankAccount bankAccount) {
-        return bankAccountRepository.findByClientId(bankAccount.getClientId()).stream()
+        return bankAccountRepository.findByClientId(bankAccount.getClientId())
+                .stream()
                 .anyMatch(bk -> bk.getType().getValue().equals(bankAccount.getType().getValue()));
     }
 
@@ -117,14 +117,13 @@ public class BankAccountApiDelegateImpl implements AccountsApiDelegate {
                 bankAccount.setMovementsLimit(1);
                 break;
             default:
-                logger.warn("Unknown account type: {}", bankAccount.getType());
+                logger.error("Unknown account type: {}", bankAccount.getType());
                 break;
         }
     }
 
     @Override
     public ResponseEntity<Void> deleteAccount(String accountId) {
-        logger.info("Request received to delete bank account with ID: {}", accountId);
 
         if (!bankAccountRepository.existsById(accountId)) {
             logger.warn("Bank account with ID: {} not found", accountId);

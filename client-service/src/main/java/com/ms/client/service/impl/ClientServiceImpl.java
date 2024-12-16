@@ -29,6 +29,7 @@ public class ClientServiceImpl implements ClientService {
         return existClient(client)
                 .flatMap(exists -> {
                     if (Boolean.TRUE.equals(exists)) {
+                        logger.warn("Client with ID: {} is already registered", client.getId());
                         return Mono.just(ResponseUtil.getResponse(
                                 HttpStatus.CONFLICT.value(), "The client is already registered", null));
                     }

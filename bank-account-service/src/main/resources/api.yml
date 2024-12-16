@@ -113,117 +113,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ModelApiResponse"
-  /credits:
-    post:
-      tags:
-        - credit
-      summary: Create a new credit
-      operationId: createCredit
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/Credit"
-      responses:
-        '201':
-          description: Credit created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-    get:
-      tags:
-        - credit
-      summary: Get all credits
-      operationId: getAllCredits
-      responses:
-        '200':
-          description: List of credits
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-  /credits/{creditId}:
-    get:
-      tags:
-        - credit
-      summary: Get credit details
-      operationId: getCreditById
-      parameters:
-        - name: creditId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Credit details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-    delete:
-      tags:
-        - credit
-      summary: Delete credit
-      operationId: deleteCredit
-      parameters:
-        - name: creditId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Credit deleted
-        '404':
-          description: Credit not found
-  /credits/client/{clientId}:
-    get:
-      tags:
-        - credit
-      summary: Get credits by client ID
-      operationId: getCreditsByClientId
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: List of credits for a client
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-        '404':
-          description: No credits found for the client
-
-  /reports/products/{clientId}:
-    get:
-      tags:
-        - reports
-      summary: Generate a general report of bank products
-      operationId: generateProductReport
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: General product report generated successfully
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelApiResponse"
-        '400':
-          description: Invalid date range or missing parameters
-        '404':
-          description: No data found for the specified date range
 
 components:
   schemas:
@@ -336,7 +225,7 @@ components:
         name:
           type: string
           example: Rafael
-        lastname:
+        lastName:
           type: string
           example: Ponte
         address:

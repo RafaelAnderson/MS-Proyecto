@@ -3,6 +3,7 @@ package com.ms.client.controller;
 import com.ms.client.model.Client;
 import com.ms.client.model.ModelApiResponse;
 import com.ms.client.service.impl.ClientServiceImpl;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
